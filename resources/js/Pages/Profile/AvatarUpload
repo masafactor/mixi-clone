@@ -1,0 +1,35 @@
+<template>
+  <div class="p-6 max-w-md mx-auto">
+    <h2 class="text-xl font-bold mb-4">アバター画像アップロード</h2>
+
+    <form @submit.prevent="submit">
+    
+      <input type="file" @change="e => form.avatar = e.target.files[0]" accept="image/ *" class="mb-4" />
+
+      <div v-if="form.avatar" class="mb-4">
+        <img :src="URL.createObjectURL(form.avatar)" class="w-32 h-32 rounded-full" />
+      </div>
+
+      <button type="submit" :disabled="form.processing" class="bg-blue-500 text-white px-4 py-2 rounded">
+        アップロード
+      </button>
+
+      <div v-if="form.errors.avatar" class="text-red-500 mt-2">{{ form.errors.avatar }}</div>
+    </form>
+  </div>
+</template>
+
+<script setup>
+import { useForm } from '@inertiajs/vue3'
+
+const form = useForm({
+  avatar: null,
+})
+
+const submit = () => {
+  form.post(route('profile.avatar.upload'), {
+    forceFormData: true,
+    preserveScroll: true,
+  })
+}
+</script>
