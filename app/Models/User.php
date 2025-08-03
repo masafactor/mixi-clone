@@ -98,4 +98,14 @@ public function friends()
     return $this->belongsToMany(User::class, 'friend_users', 'sender_id', 'receiver_id')
                 ->wherePivot('status', 'accepted');
 }
+
+public function communities()
+{
+    return $this->belongsToMany(Community::class)
+        ->withPivot('role')
+        ->withTimestamps();
+}
+
+
+
 }

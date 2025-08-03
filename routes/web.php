@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\CommunityController;
+use App\Http\Controllers\CommunityMemberController;
 use App\Http\Controllers\DiaryController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +13,7 @@ use Inertia\Inertia;
 use App\Models\User;
 use App\Http\Controllers\FriendUserController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\TopicController;
 use App\Http\Controllers\UsernameController;
 use App\Http\Controllers\UserPageController;
 use App\Http\Controllers\UserProfileController;
@@ -70,9 +74,36 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
+
+
+    // コミュニティ一覧
+    Route::get('/communities', [CommunityController::class, 'index'])->name('communities.index');
+
+    // コミュニティ作成フォーム
+    Route::get('/communities/create', [CommunityController::class, 'create'])->name('communities.create');
+
+    // コミュニティ登録
+    Route::post('/communities', [CommunityController::class, 'store'])->name('communities.store');
+
+    // コミュニティ詳細
+    Route::get('/communities/{community}', [CommunityController::class, 'show'])->name('communities.show');
+
+   
+    
     // ダッシュボード
     Route::get('/dashboard', fn() => Inertia::render('Dashboard'))->name('dashboard');
 
+
+    // コミュニティ参加申請
+    Route::post('/communities/{community}/join', [CommunityMemberController::class, 'join'])
+        ->name('communities.join');
+    Route::delete('/communities/{community}/leave', [CommunityMemberController::class, 'leave'])
+        ->name('communities.leave');
+
+    // 管理者専用承認機能
+    Route::patch('/communities/{community}/approve/{user}', [CommunityMemberController::class, 'approveMember'])->name('communities.approve');
+    Route::delete('/communities/{community}/reject/{user}', [CommunityMemberController::class, 'rejectMember'])->name('communities.reject');
+    
     // フレンド機能
     
     Route::post('/friend-request', [FriendUserController::class, 'store'])->name('friend.request');
@@ -113,6 +144,16 @@ Route::get('/username-suggestion/{username}', function ($username) {
     }
     return response()->json(['suggestion' => $candidate]);
 });
+
+Route::prefix('communities/{community}')->group(function () {
+    Route::get('topics', [TopicController::class, 'index'])->name('topics.index');
+    Route::get('topics/create', [TopicController::class, 'create'])->name('topics.create');
+    Route::post('topics', [TopicController::class, 'store'])->name('topics.store');
+    Route::get('topics/{topic}', [TopicController::class, 'show'])->name('topics.show');
+});
+
+// コメント
+Route::post('topics/{topic}/comments', [CommentController::class, 'store'])->name('comments.store');
 
 
 Route::prefix('users')->group(function () {
