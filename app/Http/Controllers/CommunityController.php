@@ -113,10 +113,16 @@ class CommunityController extends Controller
             'isMember'    => $isMember,
             'isPending'   => $isPending,
             'isAdmin'     => $isAdmin,
-            'membersCount'=> $community->users->where('pivot.role', 'member')->count(),
-            'members'     => $community->users->where('pivot.role', 'member')->values(),
+            'membersCount' => $community->users()
+                ->whereIn('role', ['member', 'admin'])
+                ->count(),
+            'members' => $community->users()
+                ->whereIn('role', ['member', 'admin'])
+                ->get(),
             'topics'      => $community->topics,
-            'pendingMembers' => $isAdmin ? $community->users()->wherePivot('role', 'pending')->get() : [],
+            'pendingMembers' => $community->users()
+                ->where('role', 'pending')
+                ->get(),
         ]);
     }
 

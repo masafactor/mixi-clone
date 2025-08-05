@@ -44,38 +44,30 @@
       <h2 class="text-xl font-bold">メンバー ({{ memberCount }}人)</h2>
       <div v-if="community.users.length">
         <ul class="list-disc pl-5">
-          <li v-for="user in community.users" :key="user.id">
-            {{ user.name }}
+          <li v-for="member in members" :key="member.id">
+            {{ member.name }}
           </li>
         </ul>
       </div>
       <p v-else class="text-gray-500">まだメンバーはいません。</p>
     </div>
-<!-- トピック一覧 -->
-<div class="mt-6">
-  <h2 class="text-xl font-bold">トピック一覧</h2>
 
-  <!-- topics が存在するか確認 -->
-  <div v-if="community.topics && community.topics.length > 0">
-    <div v-for="topic in community.topics" :key="topic.id" class="border-b py-2">
-      <h3 class="font-semibold">{{ topic.title }}</h3>
-      <p class="text-sm text-gray-500">
-        作成者: {{ topic.user?.name || '不明' }} / {{ topic.created_at }}
-      </p>
-      <p>{{ topic.body }}</p>
+<!-- トピック一覧ページへのリンク -->
+    <div class="bg-white shadow rounded p-6 text-center">
+      <Link
+        :href="route('topics.index', props.community.id)"
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
+        トピック一覧へ
+      </Link>
     </div>
-  </div>
-  <div v-else>
-    <p class="text-gray-500">まだトピックはありません。</p>
-  </div>
-</div>
 
   </div>
 </template>
 
 <script setup>
 
-import { router } from '@inertiajs/vue3'
+import { router,Link } from '@inertiajs/vue3'
 
 
 const props = defineProps({
@@ -100,12 +92,13 @@ function leaveCommunity() {
 }
 
 // 承認
-function approve(userId) {
+// 承認処理
+function approveMember(userId) {
   router.patch(route('communities.approve', [props.community.id, userId]))
 }
 
-// 拒否
-function reject(userId) {
+// 拒否処理
+function rejectMember(userId) {
   router.delete(route('communities.reject', [props.community.id, userId]))
 }
 
