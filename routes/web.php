@@ -43,7 +43,7 @@ Route::get('/auth/github/callback', function () {
     Auth::login($user);
 
 
-    return redirect('/dashboard');
+    return redirect('/home');
 });
 
 // メール認証関連
@@ -59,7 +59,7 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('username.register');
     }
 
-        return redirect('/dashboard');
+        return redirect('/home');
     })->middleware(['signed'])->name('verification.verify');
 
     Route::post('/email/verification-notification', function () {
@@ -89,11 +89,6 @@ Route::middleware([
     Route::get('/communities/{community}', [CommunityController::class, 'show'])->name('communities.show');
 
    
-    
-    // ダッシュボード
-    Route::get('/dashboard', fn() => Inertia::render('Dashboard'))->name('dashboard');
-
-
     // コミュニティ参加申請
     Route::post('/communities/{community}/join', [CommunityMemberController::class, 'join'])
         ->name('communities.join');
@@ -130,12 +125,13 @@ Route::middleware([
     Route::get('/diary', [DiaryController::class, 'index'])->name('diary.index');
     Route::get('/diary/create', [DiaryController::class, 'create'])->name('diary.create');
     Route::post('/diary', [DiaryController::class, 'store'])->name('diary.store');
-    Route::get('/diary/{id}', [DiaryController::class, 'show'])->name('diary.show');
+    Route::get('/diary/{diary}', [DiaryController::class, 'show'])->name('diary.show');
     Route::get('/diary/{diary}/edit', [DiaryController::class, 'edit'])->name('diary.edit');
     Route::put('/diary/{diary}', [DiaryController::class, 'update'])->name('diary.update');
     // これがあるか確認
-Route::delete('/diary/{id}', [DiaryController::class, 'destroy'])->name('diary.destroy');
 
+    Route::delete('/diary/{diary}', [DiaryController::class, 'destroy'])
+    ->name('diary.destroy');
 Route::get('/username-suggestion/{username}', function ($username) {
     $candidate = $username;
     $i = 1;
@@ -153,12 +149,19 @@ Route::prefix('communities/{community}')->group(function () {
 });
 
 // コメント
-Route::post('topics/{topic}/comments', [CommentController::class, 'store'])->name('comments.store');
+// Route::post('topics/{topic}/comments', [CommentController::class, 'store'])->name('comments.store');
 
 
 Route::prefix('users')->group(function () {
     Route::get('/set-username', [UsernameController::class, 'create'])->name('username.register');
     Route::post('/set-username', [UsernameController::class, 'store'])->name('username.store');
+});
+
+// routes/web.php
+Route::prefix('communities/{community}/topics/{topic}')->group(function () {
+    Route::post('comments',  [CommentController::class, 'store'])->name('comments.store');
+    Route::patch('comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
+    Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 });
 
 

@@ -10,5 +10,12 @@ class Diary extends Model
     'title',
     'body',
     'user_id', // ←必要なフィールドをすべて書く
+    'visibility',
+    
 ];
+
+public function user()
+{
+    return $this->belongsTo(User::class);
+}
 }

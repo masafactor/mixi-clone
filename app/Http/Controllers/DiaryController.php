@@ -53,9 +53,23 @@ public function store(StoreDiaryRequest $request)
     /**
      * Display the specified resource.
      */
-    public function show(Diary $diary)
+    public function show(\App\Models\Diary $diary)
     {
-        //
+        $diary->loadMissing('user:id,username');
+       
+        return Inertia::render('Diary/Show', [
+            'diary' => [
+                'id'         => $diary->id,
+                'title'      => $diary->title,
+                'body'       => $diary->body,
+                'visibility' => $diary->visibility,
+                'created_at' => optional($diary->created_at)->toDateTimeString(),
+                'user'       => [
+                    'id'   => $diary->user_id,
+                    'name' => $diary->user?->username,
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -91,7 +105,7 @@ public function store(StoreDiaryRequest $request)
     //     abort(403);
     // }
 
-    $diary->delete();
+    $diary->forceDelete();
 
     return to_route('diary.index')->with('success', '日記を削除しました');
     }

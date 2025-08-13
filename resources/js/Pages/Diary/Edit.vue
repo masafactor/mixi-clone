@@ -15,6 +15,17 @@
         <div v-if="form.errors.body" class="text-red-500">{{ form.errors.body }}</div>
       </div>
 
+   <!-- 公開範囲 -->
+    <div>
+      <label class="block text-sm mb-1">公開範囲</label>
+      <select v-model="form.visibility" class="border p-2 w-full">
+        <option value="public">全体公開</option>
+        <option value="friends">友達まで</option>
+        <option value="private">非公開</option>
+      </select>
+      <div v-if="form.errors.visibility" class="text-red-600 text-sm mt-1">{{ form.errors.visibility }}</div>
+    </div>
+
       <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">更新</button>
     </form>
   </div>
@@ -31,6 +42,7 @@ const props = defineProps({
 const form = useForm({
   title: props.diary.title,
   body: props.diary.body,
+  visibility: props.diary.visibility
 })
 
 function submit() {

@@ -85,6 +85,7 @@
 
 <script setup>
 import { Link, router } from '@inertiajs/vue3'
+import { onMounted } from 'vue'
 
 const props = defineProps({
   profileUser: Object,
@@ -92,6 +93,7 @@ const props = defineProps({
   isOwner: Boolean,
   friendStatus: String,
   prefectures: Array,
+  userId: Number
 })
 
 const genderLabel = {
@@ -114,4 +116,13 @@ function sendRequest(receiverId) {
 function unfriend(friendId) {
   router.delete(`/friends/${friendId}`)
 }
+
+onMounted(() => {
+  // サイレントPOST（スクロールや状態を壊さない）
+  router.post(route('footprints.store.profile', { user: props.userId }), {}, {
+    preserveScroll: true,
+    preserveState: true,
+    onError: () => {}, // 無視
+  })
+})
 </script>

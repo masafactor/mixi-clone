@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <h1 class="text-2xl font-bold">{{ community.name }}</h1>
+ <div class="max-w-3xl mx-auto py-8 space-y-6">
+    <h1 class="text-2xl font-bold">コミュニティ名:{{ community.name }}</h1>
     <p class="text-gray-500">カテゴリ: {{ community.category.name }}</p>
 
 

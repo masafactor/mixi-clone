@@ -17,6 +17,7 @@ class TopicController extends Controller
         return Inertia::render('Topics/Index', [
             'community' => $community->load('category'),
             'topics'    => $community->topics()->with('user')->latest()->get(),
+            
         ]);
     }
 
@@ -47,11 +48,21 @@ class TopicController extends Controller
 
     public function show(Community $community, Topic $topic)
     {
-        return Inertia::render('Topics/Show', [
-            'community' => $community,
-            'topic'     => $topic->load(['user', 'comments.user']),
-        ]);
+        $topic->load([
+        'user',                // トピック作成者
+        'comments.user'        // コメントとその投稿者
+    ]);
+
+    return inertia('Topics/Show', [
+        'community' => $community->only(['id', 'name']),
+        'topic'     => $topic,
+        'comments'  => $topic->comments
+    ]);
+    
     }
+
+
+   
 
     // public function show($id)
     // {
