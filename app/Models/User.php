@@ -107,5 +107,14 @@ public function communities()
 }
 
 
+public function footprintsReceived()
+{
+    return $this->hasMany(Footprint::class, 'visited_user_id');
+}
+public function footprintsViewed()
+{
+    return $this->hasMany(Footprint::class, 'viewer_id');
+}
+
 
 }

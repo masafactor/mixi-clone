@@ -4,6 +4,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\CommunityMemberController;
 use App\Http\Controllers\DiaryController;
+use App\Http\Controllers\FootprintController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -13,6 +14,7 @@ use Inertia\Inertia;
 use App\Models\User;
 use App\Http\Controllers\FriendUserController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\UsernameController;
 use App\Http\Controllers\UserPageController;
@@ -115,11 +117,34 @@ Route::middleware([
         ]);
     })->name('profile.edit');
 
+     // 足あと一覧
+    Route::get('/footprints', [FootprintController::class, 'index'])->name('footprints.index');
+    // Route::get('/communities', [CommunityController::class, 'index'])->name('communities.index');
+
+    // プロフィール閲覧足あと
+    // Route::post('/users/{user}/footprints', [FootprintController::class, 'storeProfile'])
+    //     ->name('footprints.profile');
+
+    Route::post('/users/{user:username}/footprints', [FootprintController::class, 'storeProfile'])
+    ->name('footprints.profile');
+
+    // 日記閲覧足あと
+    Route::post('/diaries/{diary}/footprints', [FootprintController::class, 'storeDiary'])
+        ->name('footprints.diary');
+
+    // 足あと削除
+    Route::delete('/footprints/{footprint}', [FootprintController::class, 'destroy'])
+        ->name('footprints.destroy');
+        
     Route::get('/profile/edit', [UserProfileController::class, 'edit'])->name('profile.edit');
     // 公開プロフィール更新処理
     Route::put('/profile', [UserProfileController::class, 'update'])->name('profile.update');
 //   Route::match(['get', 'post'], '/profile/avatar', [UserProfileController::class, 'uploadAvatar']);
 
+
+
+    // routes/web.php
+    Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 
     Route::get('/diary', [DiaryController::class, 'index'])->name('diary.index');
@@ -150,7 +175,8 @@ Route::prefix('communities/{community}')->group(function () {
 
 // コメント
 // Route::post('topics/{topic}/comments', [CommentController::class, 'store'])->name('comments.store');
-
+Route::get('/profile/icon', [UserProfileController::class, 'editIcon'])
+    ->name('profile.icon');
 
 Route::prefix('users')->group(function () {
     Route::get('/set-username', [UsernameController::class, 'create'])->name('username.register');

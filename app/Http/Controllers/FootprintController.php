@@ -1,70 +1,85 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Footprint;
 use App\Models\User;
 use App\Models\Diary;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 
 class FootprintController extends Controller
 {
-
-
     /**
      * 自分に付いた足あと一覧
      */
-    public function index(Request $request)
+public function index(Request $request)
     {
-        $footprints = Footprint::with(['viewer:id,name'])
+        $footprints = Footprint::with(['viewer' => function ($q) {
+                // アクセサ用に profile_photo_path / name を含める
+                $q->select('id','name','username','profile_photo_path');
+            }])
             ->where('visited_user_id', $request->user()->id)
-            ->latest()
-            ->paginate(20);
+            ->orderByDesc('updated_at')
+            ->paginate(20)
+            ->through(function ($fp) {
+                $v = $fp->viewer;
+                return [
+                    'id'         => $fp->id,
+                    'updated_at' => $fp->updated_at->toIso8601String(),
+                    'viewer'     => [
+                        'id'       => $v->id,
+                        'name'     => $v->username,            // 表示統一（好みで name に）
+                        'username' => $v->username,
+                        'icon'     => $v->profile_photo_url,   // ← アイコンURL
+                        'link'     => route('users.show', $v->username),
+                    ],
+                ];
+            });
 
-        // Inertia想定。Bladeなら view() に置き換え
-        return inertia('Footprints/Index', [
-            'footprints' => $footprints,
-        ]);
+        return inertia('Footprints/Index', ['footprints' => $footprints]);
     }
 
+
     /**
-     * プロフィールを見た足あと記録
-     * 1日1件だけ残す（同じ viewer → visited_user）
+     * プロフィール閲覧の足あと（1日1件）
      */
     public function storeProfile(User $user, Request $request)
     {
         $viewerId = $request->user()->id;
-
         if ($viewerId === $user->id) {
-            return response()->noContent(); // 自分のページは記録しない
+            return response()->noContent(); // 自分は記録しない
         }
 
-        // 今日すでに記録があるか
         $today = now()->toDateString();
 
-        $exists = Footprint::where('viewer_id', $viewerId)
-            ->where('visited_user_id', $user->id)
-            ->whereDate('created_at', $today)
-            ->exists();
-
-        if (! $exists) {
-            Footprint::create([
+        // 同日ユニーク制約（viewer_id, visited_user_id, visited_on）を想定
+        try {
+            Footprint::updateOrCreate(
+                [
+                    'viewer_id'       => $viewerId,
+                    'visited_user_id' => $user->id,
+                    'visited_on'      => $today,
+                ],
+                [
+                    'updated_at'      => now(), // 既存なら更新時刻だけ上げる
+                ]
+            );
+        } catch (QueryException $e) {
+            // まれな競合時の保険（ユニーク制約レース）
+            // 既存を触るだけ
+            Footprint::where([
                 'viewer_id'       => $viewerId,
                 'visited_user_id' => $user->id,
-            ]);
-        } else {
-            // 「最新に上げたい」場合は最終訪問時間を更新
-            Footprint::where('viewer_id', $viewerId)
-                ->where('visited_user_id', $user->id)
-                ->whereDate('created_at', $today)
-                ->update(['updated_at' => now()]);
+                'visited_on'      => $today,
+            ])->limit(1)->update(['updated_at' => now()]);
         }
 
-        return response()->noContent();
+        return  back(status: 303);
     }
 
     /**
-     * 日記詳細を見た足あと記録（オプション）
-     * 「誰のページを見たか」は日記の所有者で判定
+     * 日記閲覧の足あと（1日1件、所有者に付与）
      */
     public function storeDiary(Diary $diary, Request $request)
     {
@@ -72,33 +87,35 @@ class FootprintController extends Controller
         $viewerId = $request->user()->id;
 
         if ($viewerId === $ownerId) {
-            return response()->noContent(); // 自分の日記は記録しない
+            return response()->noContent();
         }
 
         $today = now()->toDateString();
 
-        $exists = Footprint::where('viewer_id', $viewerId)
-            ->where('visited_user_id', $ownerId)
-            ->whereDate('created_at', $today)
-            ->exists();
-
-        if (! $exists) {
-            Footprint::create([
+        try {
+            Footprint::updateOrCreate(
+                [
+                    'viewer_id'       => $viewerId,
+                    'visited_user_id' => $ownerId,
+                    'visited_on'      => $today,
+                ],
+                [
+                    'updated_at'      => now(),
+                ]
+            );
+        } catch (\Illuminate\Database\QueryException $e) {
+            Footprint::where([
                 'viewer_id'       => $viewerId,
                 'visited_user_id' => $ownerId,
-            ]);
-        } else {
-            Footprint::where('viewer_id', $viewerId)
-                ->where('visited_user_id', $ownerId)
-                ->whereDate('created_at', $today)
-                ->update(['updated_at' => now()]);
+                'visited_on'      => $today,
+            ])->limit(1)->update(['updated_at' => now()]);
         }
 
-        return response()->noContent();
+        return back(status: 303);
     }
 
     /**
-     * 足あとを削除（任意：自分に付いたレコードのみ）
+     * 足あと削除（自分宛のみ）
      */
     public function destroy(Footprint $footprint, Request $request)
     {

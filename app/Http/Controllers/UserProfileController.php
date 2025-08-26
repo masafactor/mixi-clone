@@ -86,4 +86,14 @@ public function uploadAvatar(Request $request)
     return redirect()->route('profile.edit')
         ->with('success', 'プロフィールを更新しました');
 }
+
+
+    public function editIcon(Request $request)
+    {
+        // 画面表示だけ。処理は Jetstream の既存エンドポイントに投げる
+        return inertia('Profile/Icon', [
+            'user' => $request->user()->only('name','email','profile_photo_url'),
+        ]);
+    }
+
 }

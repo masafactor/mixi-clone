@@ -58,7 +58,13 @@ if ($profile) {
 
 
 return Inertia::render('Users/Show', [
-    'profileUser'  => $user,  // profile を含んだ状態で渡す
+    'profileUser'  => [
+            'id'       => $user->id,
+            'name'     => $user->name,
+            'username' => $user->username,
+            'icon'     => $user->profile_photo_url, // ★ ここに入れる
+            'profile'  => $user->profile,           // 可視性加工後のprofile
+        ], // profile を含んだ状態で渡す
     'isOwner'      => $isOwner,
     'friendStatus' => $friendStatus,
     'diaries'      => Diary::where('user_id', $user->id)->latest()->get(),

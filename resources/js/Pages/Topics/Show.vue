@@ -4,7 +4,8 @@
     <div class="bg-white shadow rounded p-6">
       <h1 class="text-2xl font-bold mb-2">{{ topic.title }}</h1>
       <p class="text-gray-500 text-sm mb-4">
-        作成者: {{ topic.user?.name }} / {{ topic.created_at }}
+        作成者:    
+        {{ topic.user?.username }} / {{ topic.created_at }}
       </p>
       <p class="text-gray-700 whitespace-pre-line">{{ topic.body }}</p>
     </div>
@@ -17,7 +18,7 @@
         <div v-for="comment in comments" :key="comment.id" class="border-b py-3">
           <div class="flex items-start justify-between">
             <div class="pr-3">
-              <p class="font-semibold">{{ comment.user.name }}</p>
+              <p class="font-semibold">{{ comment.user.username }}</p>
 
               <!-- 編集モード -->
               <div v-if="editingId === comment.id">

@@ -54,7 +54,7 @@ class TopicController extends Controller
     ]);
 
     return inertia('Topics/Show', [
-        'community' => $community->only(['id', 'name']),
+        'community' => $community->only(['id', 'username','profile_photo_path']),
         'topic'     => $topic,
         'comments'  => $topic->comments
     ]);

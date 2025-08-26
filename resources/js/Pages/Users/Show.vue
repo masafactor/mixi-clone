@@ -3,6 +3,14 @@
     <!-- ユーザー情報 -->
     <div class="bg-white shadow rounded p-6">
       <h1 class="text-2xl font-bold mb-2">{{ profileUser.username ?? profileUser.name }}</h1>
+
+      <img
+        v-if="profileUser?.icon"
+        :src="profileUser.icon"
+        class="h-20 w-20 rounded-full object-cover border"
+        alt="user icon"
+      />
+
       <p class="text-gray-600">
         {{ profileUser.profile?.bio ?? '自己紹介はまだありません。' }}
       </p>
@@ -84,8 +92,11 @@
 </template>
 
 <script setup>
-import { Link, router } from '@inertiajs/vue3'
+import { Link, router,usePage  } from '@inertiajs/vue3'
 import { onMounted } from 'vue'
+
+
+const me = usePage().props.auth?.user
 
 const props = defineProps({
   profileUser: Object,
@@ -93,7 +104,8 @@ const props = defineProps({
   isOwner: Boolean,
   friendStatus: String,
   prefectures: Array,
-  userId: Number
+  userId: Number,
+  profileUser: { type: Object, required: true },
 })
 
 const genderLabel = {
@@ -118,11 +130,13 @@ function unfriend(friendId) {
 }
 
 onMounted(() => {
-  // サイレントPOST（スクロールや状態を壊さない）
-  router.post(route('footprints.store.profile', { user: props.userId }), {}, {
-    preserveScroll: true,
-    preserveState: true,
-    onError: () => {}, // 無視
-  })
+  if (!me?.id || props.isOwner || !props.profileUser?.username) return
+
+  router.post(
+    route('footprints.profile', { user: props.profileUser.username }),
+    {},
+    { preserveScroll: true, preserveState: true }
+  )
 })
+
 </script>

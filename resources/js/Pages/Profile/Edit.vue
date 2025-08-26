@@ -53,15 +53,15 @@
       </div>
 
 
+      <Link href="/profile/icon" class="text-blue-500 underline">
+        アイコンを変更
+      </Link>
 
       <!-- 更新ボタン -->
       <button class="bg-blue-500 text-white px-4 py-2 rounded">更新</button>
     </form>
 
-     <!-- 画像アップロードページへの遷移ボタン -->
-<Link href="/profile/avatar" class="text-blue-600 underline">
-  アバター画像を変更する
-</Link>
+
 
   </div>
 </template>

@@ -42,7 +42,7 @@ class UsernameController extends Controller
         $user->username = $request->username;
         $user->save();
 
-        return to_route('dashboard')->with('success', 'ユーザー名を設定しました');
+        return to_route('home')->with('success', 'ユーザー名を設定しました');
     }
 
     function generateIncrementalUsername(string $base): string
